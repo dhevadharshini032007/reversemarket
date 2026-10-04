@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { get, resetDemoData, update, watch } from '../lib/db.js'
+import { resetDemoData, update, watch } from '../lib/db.js'
 
 export default function AdminQueuePage() {
   const [sellers, setSellers] = useState([])
@@ -17,7 +17,7 @@ export default function AdminQueuePage() {
       try {
         const pending = profiles.filter((profile) => profile.status === 'pending' || profile.reapplicationPending)
         const rows = await Promise.all(pending.map(async (profile) => {
-          const user = await get('users', profile.uid) || {}
+          const user = profile.user || {}
           return { ...profile, isReapplication: Boolean(profile.reapplicationPending), name: user.name || profile.businessName, email: user.email || '', phone: user.phone || '' }
         }))
         if (active) setSellers(rows)

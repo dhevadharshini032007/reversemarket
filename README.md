@@ -1,12 +1,14 @@
 # ReverseMarket
 
-ReverseMarket is a React + Vite campus marketplace demo. Users, seller profiles, requirements, offers, and counter-offers are stored in this browser's localStorage; the signed-in session uses sessionStorage so separate tabs can use different accounts. Data is seeded automatically the first time the app opens. No server, API key, or internet connection is needed after dependencies are installed.
+ReverseMarket is a React + Vite campus marketplace demo backed by an Express + SQLite API in `server/`. Users, seller profiles, requirements, offers, and counter-offers are stored in SQLite; the JWT session is stored in sessionStorage so separate tabs can use different accounts. The database seeds the demo records on first run. The Vite development server proxies `/api` to the backend.
 
 ## Run locally
 
 1. Install Node.js 20.19+ or 22.12+ and npm.
 2. Run `npm install`.
-3. Run `npm run dev` and open the local URL printed by Vite.
+3. Run `npm run dev`. This starts the Express API and Vite together; open the Local URL Vite prints in the terminal.
+
+Vite also prints a Network URL such as `http://192.168.1.23:5173/`. To find the laptop's Wi-Fi IP manually on Windows, run `ipconfig` and look for the IPv4 Address under the connected Wi-Fi adapter. On your phone, join the same Wi-Fi network and open `http://<laptop-ip>:5173/` in its browser. If Windows Firewall prompts you, allow Node.js on Private networks so the phone can connect.
 
 Use these demo accounts on the login page:
 
@@ -15,11 +17,19 @@ Use these demo accounts on the login page:
 - Approved sellers: `meera@demo.com`, `arjun@demo.com`, and `priya@demo.com` / `Demo2026`
 - Pending seller: `ravi@demo.com` / `Demo2026`
 
-The admin dashboard can approve or reject seller applications and reset the browser's demo data. New seller accounts remain pending until approved. Passwords are salted and hashed with Web Crypto SHA-256 before they are stored.
+## Run the API
+
+The API listens on `http://127.0.0.1:3001`; its SQLite database is created at `server/data/reversemarket.sqlite` and seeded on first run. The database file lives in `server/data/` and is ignored by Git. Set `JWT_SECRET` before starting if you need a non-demo signing key, or set `DATABASE_PATH` to choose another database file.
+
+With the API running, `npm run test:server` exercises authentication, role and ownership checks, requirements, offers, shortlist, counter-offers, acceptance, contact access, seller approval, and demo reset. The demo reset endpoint is admin-only and restores the seed records.
+
+API routes are under `/api`: `/auth/signup`, `/auth/login`, `/requirements`, `/requirements/:id/offers`, `/offers/mine`, `/offers/:id/shortlist`, `/offers/:id/accept`, `/offers/:id/counter-offers`, `/counter-offers/mine`, `/admin/sellers`, and `/admin/reset-demo-data`. Send the JWT returned by login as `Authorization: Bearer <token>` for protected routes.
+
+The admin dashboard can approve or reject seller applications and reset the SQLite demo data. New seller accounts remain pending until approved. Passwords are hashed with bcrypt on the server.
 
 ## Marketplace behavior
 
 - Buyers can create, edit, and cancel requirements, compare scored and ranked offers, adjust priorities, shortlist offers, accept an offer, and view contact details for the resulting deal.
 - Buyers can submit counter-offers for shortlisted offers. Approved sellers can accept or decline them, edit offers, or withdraw offers while a requirement is open.
-- Updates in another tab are reflected through the browser `storage` event.
-- The demo data is local to one browser profile and is not a secure production authentication or database system.
+- Requirement, comparison, seller board, and offer views poll the API every three seconds to pick up activity from other tabs.
+- The local demo JWT fallback is for development. Configure `JWT_SECRET` appropriately before exposing the API beyond a trusted development machine.

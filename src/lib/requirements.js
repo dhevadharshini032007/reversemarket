@@ -33,14 +33,14 @@ export async function expireRequirement(requirementId) {
   if (requirement?.status === 'open' && requirement.expiresAt <= Date.now()) await update('requirements', requirementId, { status: 'expired' })
 }
 
-export function watchBuyerRequirements(buyerId, onNext) {
-  return watch('requirements', (rows) => onNext(asQuerySnapshot(rows.filter((row) => row.buyerId === buyerId))))
+export function watchBuyerRequirements(buyerId, onNext, onError) {
+  return watch('requirements', (rows) => onNext(asQuerySnapshot(rows.filter((row) => row.buyerId === buyerId))), onError)
 }
-export function watchBuyerRequirement(requirementId, onNext) {
-  return watch('requirements', (rows) => onNext(asSnapshot(rows.find((row) => row.id === requirementId) || null)))
+export function watchBuyerRequirement(requirementId, onNext, onError) {
+  return watch('requirements', (rows) => onNext(asSnapshot(rows.find((row) => row.id === requirementId) || null)), onError)
 }
-export function watchRequirementOffers(requirementId, onNext) {
-  return watch('offers', (rows) => onNext(asQuerySnapshot(rows.filter((row) => row.requirementId === requirementId && row.status === 'active'))))
+export function watchRequirementOffers(requirementId, onNext, onError) {
+  return watch('offers', (rows) => onNext(asQuerySnapshot(rows.filter((row) => row.requirementId === requirementId && row.status === 'active'))), onError)
 }
 export async function getRequirementOfferCount(requirementId) {
   return (await list('offers', (row) => row.requirementId === requirementId && row.status === 'active')).length

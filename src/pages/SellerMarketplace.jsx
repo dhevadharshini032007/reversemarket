@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import OfferForm from '../components/OfferForm.jsx'
-import { get } from '../lib/db.js'
+import { getDeal } from '../lib/db.js'
 import { matchingProductTag } from '../lib/productMatching.js'
 import { useAuth } from '../context/useAuth.js'
 import {
@@ -104,12 +104,12 @@ export default function SellerMarketplace({ sellerProfile }) {
     let active = true
     const accepted = offers.filter((offer) => offer.status === 'accepted' && offer.buyerId)
     Promise.all(accepted.map(async (offer) => {
-      const buyer = await get('users', offer.buyerId)
-      if (buyer) {
-        delete buyer.passwordHash
-        delete buyer.passwordSalt
+      try {
+        const deal = await getDeal(offer.id)
+        return [offer.id, deal.buyer]
+      } catch {
+        return [offer.id, null]
       }
-      return [offer.id, buyer]
     })).then((entries) => {
       if (active) setBuyerUsers(Object.fromEntries(entries.filter(([, buyer]) => buyer)))
     })

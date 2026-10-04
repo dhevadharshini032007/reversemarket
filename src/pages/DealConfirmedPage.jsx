@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useAuth } from '../context/useAuth.js'
-import { get } from '../lib/db.js'
+import { getDeal } from '../lib/db.js'
 
 function ContactCard({ label, user }) {
   return (
@@ -29,12 +29,7 @@ export default function DealConfirmedPage() {
 
     async function loadDeal() {
       try {
-        const offer = await get('offers', offerId)
-        if (!offer) throw new Error('DEAL_NOT_FOUND')
-        if (offer.status !== 'accepted' || ![offer.buyerId, offer.sellerId].includes(account.uid)) {
-          throw new Error('DEAL_NOT_FOUND')
-        }
-        const [buyer, seller] = await Promise.all([get('users', offer.buyerId), get('users', offer.sellerId)])
+        const { offer, buyer, seller } = await getDeal(offerId)
         if (!buyer || !seller) throw new Error('CONTACT_NOT_FOUND')
         if (!active) return
 

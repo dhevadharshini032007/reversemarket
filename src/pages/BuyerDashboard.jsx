@@ -60,7 +60,6 @@ export default function BuyerDashboard() {
       setRequirements(items)
       setLoading(false)
       setLoadError('')
-      setLoadingOfferCounts(true)
 
       items.forEach((requirement) => {
         if (currentStatus(requirement) === 'expired' && requirement.status === 'open') {
